@@ -1,0 +1,91 @@
+<html>
+<head>
+<form id="hello">
+<button id="hi">print</button>
+</form>
+<script>
+function hi() {
+ window.print(); // Changed to log the string 'hello'
+ console.log('printed');
+}
+hi()
+</script>
+<button id="sharepage">share</button>
+<button id="xrButton" disabled>Enter WebXR</button>
+<script>
+  const shareButton = document.getElementById('sharepage');
+
+if (navigator.share) {
+    shareButton.addEventListener('click', async () => {
+        const shareData = {
+            title: document.title,
+            text: 'Discover this interesting page!',
+            url: window.location.href,
+        };
+
+        try {
+            await navigator.share(shareData);
+            console.log('Page shared successfully!');
+        } catch (error) {
+            console.error('Error sharing page:', error);
+        }
+    });
+} else {
+    shareButton.style.display = 'none'; // Hide the button if API is not supported
+    console.warn('Web Share API not supported in this browser.');
+}
+	
+	</script>
+	<script>
+	const xrButton = document.getElementById('xrButton');
+let xrSession = null; // To store the active XR session
+
+// Check for WebXR support and enable the button
+async function checkXRSupport() {
+    if (navigator.xr) {
+        try {
+            // Check for 'immersive-vr' or 'immersive-ar' support
+            const supported = await navigator.xr.isSessionSupported('immersive-vr'); 
+            if (supported) {
+                xrButton.disabled = false;
+                xrButton.textContent = 'Enter VR'; // Or 'Enter AR'
+            } else {
+                xrButton.textContent = 'VR Not Supported';
+            }
+        } catch (error) {
+            console.error('Error checking XR support:', error);
+            xrButton.textContent = 'Error checking XR';
+        }
+    } else {
+        xrButton.textContent = 'WebXR Not Available';
+    }
+}
+
+// Handle button click to start/end XR session
+async function onXRButtonClick() {
+    if (!xrSession) {
+        // Request a new immersive session
+        try {
+            xrSession = await navigator.xr.requestSession('immersive-vr'); // Or 'immersive-ar'
+            xrButton.textContent = 'Exit VR';
+            // Setup the WebXR session (e.g., create an XRWebGLLayer, start rendering loop)
+            // ... (further setup for rendering and frame loop)
+        } catch (error) {
+            console.error('Error requesting XR session:', error);
+            xrButton.textContent = 'Enter VR'; // Revert button text on error
+        }
+    } else {
+        // End the active XR session
+        await xrSession.end();
+        xrSession = null;
+        xrButton.textContent = 'Enter VR';
+        // Clean up any XR-related resources
+    }
+}
+
+// Add event listener to the button
+xrButton.addEventListener('click', onXRButtonClick);
+
+// Initial check for XR support when the page loads
+checkXRSupport();
+</script>
